@@ -1,9 +1,9 @@
 package domain
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -12,7 +12,8 @@ import java.util.*
 
 class Stopwatch {
 
-    var formattedTime by mutableStateOf("00:00:000")
+    private val _formattedTimeString = MutableStateFlow(formattedTime(0L))
+    val formattedTimeString = _formattedTimeString.asStateFlow()
 
     private var coroutineScope = CoroutineScope(Dispatchers.Default)
     private var isActive = false
@@ -30,7 +31,7 @@ class Stopwatch {
                 delay(10)
                 timeMillis += System.currentTimeMillis() - lastTimestamp
                 lastTimestamp = System.currentTimeMillis()
-                formattedTime = formattedTime(timeMillis)
+                _formattedTimeString.update { formattedTime(timeMillis) }
             }
         }
     }
@@ -44,7 +45,7 @@ class Stopwatch {
         coroutineScope = CoroutineScope(Dispatchers.Default)
         timeMillis = 0L
         lastTimestamp = 0L
-        formattedTime = "00:00:000"
+        _formattedTimeString.update { formattedTime(0L) }
         isActive = false
     }
 
